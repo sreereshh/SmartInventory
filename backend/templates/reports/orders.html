@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Order report{% endblock %}
+{% block content %}
+{% with report_title="Order Report" report_subtitle=date_from|default:"all dates" %}{% include "reports/_report_head.html" %}{% endwith %}
+<div class="page-header">
+  <div><h1>Order report</h1><p class="subtitle">{{ report.orders|length }} order{{ report.orders|length|pluralize }} match the filters</p></div>
+  <div class="page-actions"><button class="btn btn-outline-secondary" data-print><i class="bi bi-printer me-1"></i>Print</button></div>
+</div>
+<div class="card mb-3 no-print"><div class="card-body">
+  <form method="get" class="row g-2 filter-bar">
+    <div class="col-lg-2 col-6"><input type="date" name="date_from" value="{{ date_from }}" class="form-control" title="From"></div>
+    <div class="col-lg-2 col-6"><input type="date" name="date_to" value="{{ date_to }}" class="form-control" title="To"></div>
+    <div class="col-lg-3 col-6"><select name="status" class="form-select"><option value="">All statuses</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-lg-3 col-6"><select name="customer" class="form-select"><option value="">All customers</option>
+      {% for c in customers %}<option value="{{ c.pk }}" {% if customer == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div class="col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-fill">Apply</button><a href="{% url 'reports:orders' %}" class="btn btn-outline-secondary">Reset</a></div>
+  </form></div></div>
+{% with s=report.summary %}{% include "reports/_summary_cards.html" %}{% endwith %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+  {% for label, count in report.by_status.items %}<span class="badge badge-soft bg-secondary">{{ label }}: {{ count }}</span>{% endfor %}
+</div>
+<div class="card"><div class="table-responsive"><table class="table align-middle">
+  <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th class="text-end">Units</th><th>Status</th><th class="text-end">Total</th></tr></thead>
+  <tbody>
+  {% for o in report.orders %}
+    <tr><td><a href="{% url 'orders:detail' o.id %}">{{ o.order_number }}</a></td><td>{{ o.customer }}</td><td>{{ o.created_at|date:"d M Y, H:i" }}</td>
+      <td class="text-end">{{ o.units }}</td><td><span class="badge badge-soft bg-{{ o.status|order_badge }}">{{ o.status_display }}</span></td>
+      <td class="text-end">{{ CURRENCY }}{{ o.total_amount|floatformat:"2g" }}</td></tr>
+  {% empty %}<tr><td colspan="6"><div class="empty-state"><i class="bi bi-receipt"></i>No orders match.</div></td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

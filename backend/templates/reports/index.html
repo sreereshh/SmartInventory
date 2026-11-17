@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Reports</h1><p class="subtitle">All reports are generated live from the database and can be printed or saved as PDF.</p></div></div>
+<div class="row g-3">
+  {% for url, icon, color, title, text in cards %}{% endfor %}
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:daily' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-indigo"><i class="bi bi-calendar-day"></i></div><div><h2 class="h6 text-body mb-1">Daily sales report</h2><p class="text-muted small mb-0">Orders, revenue and products sold on a chosen day.</p></div></div></div></a></div>
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:monthly' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-violet"><i class="bi bi-calendar-month"></i></div><div><h2 class="h6 text-body mb-1">Monthly sales report</h2><p class="text-muted small mb-0">Day-by-day sales and top products for a month.</p></div></div></div></a></div>
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:total' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-green"><i class="bi bi-cash-coin"></i></div><div><h2 class="h6 text-body mb-1">Total sales report</h2><p class="text-muted small mb-0">All-time sales, monthly trend, best products and customers.</p></div></div></div></a></div>
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:inventory' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-cyan"><i class="bi bi-boxes"></i></div><div><h2 class="h6 text-body mb-1">Inventory report</h2><p class="text-muted small mb-0">Stock on hand with cost and retail valuation.</p></div></div></div></a></div>
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:low_stock' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-amber"><i class="bi bi-exclamation-triangle"></i></div><div><h2 class="h6 text-body mb-1">Low stock report</h2><p class="text-muted small mb-0">Products at or below minimum level with restock suggestions.</p></div></div></div></a></div>
+  <div class="col-md-6 col-xl-4"><a href="{% url 'reports:orders' %}" class="text-decoration-none"><div class="card h-100"><div class="card-body d-flex gap-3">
+    <div class="stat-icon icon-red"><i class="bi bi-receipt"></i></div><div><h2 class="h6 text-body mb-1">Order report</h2><p class="text-muted small mb-0">Filter orders by date, status and customer.</p></div></div></div></a></div>
+</div>
+{% endblock %}

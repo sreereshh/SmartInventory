@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets / local config
+.env
+backend/.env
+
+# Database (create it locally with `migrate` + `seed_data`)
+backend/db.sqlite3
+backend/db.sqlite3-journal
+*.sqlite3
+
+# Django
+backend/staticfiles/
+backend/media/
+
+# Android / Gradle
+android/**/build/
+android/**/.gradle/
+android/**/.idea/
+android/**/local.properties
+android/**/*.iml
+android/**/captures/
+.externalNativeBuild/
+.cxx/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Users & roles{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1><i class="bi bi-person-gear text-primary me-2"></i>Users &amp; roles</h1><p class="subtitle">Admins can promote Staff users, or deactivate accounts.</p></div>
+</div>
+<div class="card">
+  <div class="card-body border-bottom">
+    <form method="get" class="row g-2 filter-bar">
+      <div class="col-md-5"><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Search username, name or email"></div>
+      <div class="col-auto"><button class="btn btn-primary"><i class="bi bi-search me-1"></i>Search</button>
+        {% if q %}<a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}</div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+      {% for u in page %}
+        <tr>
+          <td><span class="fw-semibold">{{ u.username }}</span><div class="small text-muted">{{ u.get_full_name }}</div></td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td><span class="badge badge-soft bg-{% if u.is_admin_role %}info{% else %}secondary{% endif %}">{{ u.get_role_display }}</span></td>
+          <td>{% if u.is_active %}<span class="badge badge-soft bg-success">Active</span>{% else %}<span class="badge badge-soft bg-danger">Inactive</span>{% endif %}</td>
+          <td>{{ u.date_joined|date:"d M Y" }}</td>
+          <td class="actions"><a href="{% url 'accounts:user_update' u.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Edit</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6"><div class="empty-state"><i class="bi bi-people"></i>No users found.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

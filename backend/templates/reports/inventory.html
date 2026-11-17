@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Inventory report{% endblock %}
+{% block content %}
+{% with report_title="Inventory Report" report_subtitle="Stock valuation" %}{% include "reports/_report_head.html" %}{% endwith %}
+{% with s=report.summary %}
+<div class="page-header">
+  <div><h1>Inventory report</h1><p class="subtitle">{{ s.product_count }} products · {{ s.total_units }} units on hand</p></div>
+  <div class="d-flex gap-2 page-actions">
+    <form method="get"><select name="category" class="form-select" onchange="this.form.submit()">
+      <option value="">All categories</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select></form>
+    <button class="btn btn-outline-secondary" data-print><i class="bi bi-printer me-1"></i>Print</button>
+  </div>
+</div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Total units</div><div class="fs-4 fw-bold">{{ s.total_units }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Stock value (cost)</div><div class="fs-4 fw-bold">{{ CURRENCY }}{{ s.cost_value|floatformat:"2g" }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Stock value (retail)</div><div class="fs-4 fw-bold">{{ CURRENCY }}{{ s.retail_value|floatformat:"2g" }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Low / out of stock</div><div class="fs-4 fw-bold">{{ s.low_stock_count }} / {{ s.out_of_stock_count }}</div></div></div></div>
+</div>
+{% endwith %}
+<div class="card"><div class="table-responsive"><table class="table align-middle">
+  <thead><tr><th>Product</th><th>Category</th><th class="text-end">Qty</th><th class="text-end">Min</th><th class="text-end">Purchase</th><th class="text-end">Selling</th><th class="text-end">Cost value</th><th class="text-end">Retail value</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for p in report.products %}
+    <tr class="{% if p.stock_status == 'out' %}row-out{% elif p.stock_status == 'low' %}row-low{% endif %}">
+      <td>{{ p.name }}<div class="small text-muted">{{ p.code }}</div></td><td>{{ p.category }}</td>
+      <td class="text-end fw-semibold">{{ p.quantity }}</td><td class="text-end text-muted">{{ p.min_stock_level }}</td>
+      <td class="text-end">{{ CURRENCY }}{{ p.purchase_price|floatformat:"2g" }}</td><td class="text-end">{{ CURRENCY }}{{ p.selling_price|floatformat:"2g" }}</td>
+      <td class="text-end">{{ CURRENCY }}{{ p.cost_value|floatformat:"2g" }}</td><td class="text-end">{{ CURRENCY }}{{ p.retail_value|floatformat:"2g" }}</td>
+      <td><span class="badge badge-soft bg-{{ p.stock_status|stock_badge }}">{{ p.stock_status|stock_label }}</span></td></tr>
+  {% empty %}<tr><td colspan="9"><div class="empty-state">No products.</div></td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

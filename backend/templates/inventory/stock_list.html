@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Current stock{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Current stock</h1><p class="subtitle">Live stock levels. Rows are highlighted when stock is at or below the minimum level.</p></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'inventory:stock_in' %}" class="btn btn-success"><i class="bi bi-box-arrow-in-down me-1"></i>Stock in</a>
+    <a href="{% url 'inventory:stock_out' %}" class="btn btn-warning"><i class="bi bi-box-arrow-up me-1"></i>Stock out</a>
+    <a href="{% url 'inventory:stock_history' %}" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i>History</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body border-bottom">
+    <form method="get" class="row g-2 filter-bar">
+      <div class="col-lg-4"><div class="input-group"><span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Search name or code…"></div></div>
+      <div class="col-lg-3 col-6">
+        <select name="category" class="form-select" data-autosubmit>
+          <option value="">All categories</option>
+          {% for c in categories %}<option value="{{ c.pk }}" {% if category == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+        </select></div>
+      <div class="col-lg-3 col-6">
+        <select name="status" class="form-select" data-autosubmit>
+          <option value="">Any stock level</option>
+          <option value="ok" {% if status == 'ok' %}selected{% endif %}>In stock</option>
+          <option value="low" {% if status == 'low' %}selected{% endif %}>Low stock</option>
+          <option value="out" {% if status == 'out' %}selected{% endif %}>Out of stock</option>
+        </select></div>
+      <div class="col-lg-2 d-flex gap-2"><button class="btn btn-primary flex-fill">Search</button>
+        {% if q or category or status %}<a href="{% url 'inventory:stock_list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}</div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Product</th><th>Category</th><th class="text-end">In stock</th><th class="text-end">Minimum</th><th>Level</th><th class="text-end">Stock value</th><th></th></tr></thead>
+      <tbody>
+      {% for p in page %}
+        <tr class="{% if p.stock_status == 'out' %}row-out{% elif p.stock_status == 'low' %}row-low{% endif %}">
+          <td><a href="{% url 'products:detail' p.pk %}" class="fw-semibold text-decoration-none">{{ p.name }}</a><div class="small text-muted">{{ p.code }}</div></td>
+          <td>{{ p.category.name }}</td>
+          <td class="text-end fw-bold">{{ p.quantity }}</td>
+          <td class="text-end text-muted">{{ p.min_stock_level }}</td>
+          <td><span class="badge badge-soft bg-{{ p.stock_status|stock_badge }}">{{ p.stock_status|stock_label }}</span></td>
+          <td class="text-end">{{ CURRENCY }}{{ p.stock_value|floatformat:"2g" }}</td>
+          <td class="actions">
+            <a href="{% url 'inventory:stock_in' %}?product={{ p.pk }}" class="btn btn-sm btn-outline-success" title="Stock in"><i class="bi bi-plus-lg"></i></a>
+            <a href="{% url 'inventory:stock_out' %}?product={{ p.pk }}" class="btn btn-sm btn-outline-warning" title="Stock out"><i class="bi bi-dash-lg"></i></a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><i class="bi bi-boxes"></i>No products match your filters.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

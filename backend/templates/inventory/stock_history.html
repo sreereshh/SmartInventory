@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Stock history{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Stock history</h1><p class="subtitle">Every stock movement is recorded and cannot be edited.</p></div>
+  <a href="{% url 'inventory:stock_list' %}" class="btn btn-outline-secondary"><i class="bi bi-boxes me-1"></i>Current stock</a>
+</div>
+
+<div class="card">
+  <div class="card-body border-bottom">
+    <form method="get" class="row g-2 filter-bar">
+      <div class="col-lg-3"><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Product, code or note"></div>
+      <div class="col-lg-2 col-6">
+        <select name="type" class="form-select" data-autosubmit>
+          <option value="">In &amp; out</option>
+          <option value="IN" {% if type == 'IN' %}selected{% endif %}>Stock in</option>
+          <option value="OUT" {% if type == 'OUT' %}selected{% endif %}>Stock out</option>
+        </select></div>
+      <div class="col-lg-2 col-6">
+        <select name="reason" class="form-select" data-autosubmit>
+          <option value="">Any reason</option>
+          {% for value, label in reasons %}<option value="{{ value }}" {% if reason == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div class="col-lg-2 col-6"><input type="date" name="date_from" value="{{ date_from }}" class="form-control" title="From"></div>
+      <div class="col-lg-2 col-6"><input type="date" name="date_to" value="{{ date_to }}" class="form-control" title="To"></div>
+      <div class="col-lg-1 d-flex gap-1"><button class="btn btn-primary flex-fill"><i class="bi bi-funnel"></i></button></div>
+    </form>
+    {% if q or type or reason or date_from or date_to %}<a href="{% url 'inventory:stock_history' %}" class="small">Clear filters</a>{% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Reason</th><th class="text-end">Qty</th><th class="text-end">Before</th><th class="text-end">After</th><th>Reference</th><th>By</th></tr></thead>
+      <tbody>
+      {% for t in page %}
+        <tr>
+          <td class="text-nowrap">{{ t.created_at|date:"d M Y, H:i" }}</td>
+          <td><a href="{% url 'products:detail' t.product_id %}" class="fw-semibold text-decoration-none">{{ t.product.name }}</a><div class="small text-muted">{{ t.product.code }}</div></td>
+          <td><span class="badge badge-soft bg-{% if t.transaction_type == 'IN' %}success{% else %}warning{% endif %}">{{ t.get_transaction_type_display }}</span></td>
+          <td>{{ t.get_reason_display }}{% if t.note %}<div class="small text-muted">{{ t.note }}</div>{% endif %}</td>
+          <td class="text-end fw-semibold">{% if t.transaction_type == 'IN' %}+{% else %}−{% endif %}{{ t.quantity }}</td>
+          <td class="text-end text-muted">{{ t.quantity_before }}</td>
+          <td class="text-end">{{ t.quantity_after }}</td>
+          <td>{% if t.order %}<a href="{% url 'orders:detail' t.order_id %}">{{ t.order.order_number }}</a>{% else %}—{% endif %}</td>
+          <td>{{ t.created_by.username|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9"><div class="empty-state"><i class="bi bi-clock-history"></i>No stock transactions found.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

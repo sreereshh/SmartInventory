@@ -1,0 +1,7 @@
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Orders</div><div class="stat-value fs-4 fw-bold">{{ s.order_count }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Total sales</div><div class="stat-value fs-4 fw-bold">{{ CURRENCY }}{{ s.total_sales|floatformat:"2g" }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Units sold</div><div class="stat-value fs-4 fw-bold">{{ s.units_sold }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card"><div class="card-body"><div class="stat-label">Gross profit</div><div class="stat-value fs-4 fw-bold">{{ CURRENCY }}{{ s.gross_profit|floatformat:"2g" }}</div></div></div></div>
+</div>
+<p class="small text-muted">Sales figures exclude cancelled orders.</p>

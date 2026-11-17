@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Smart Inventory</string>
+    <string name="sign_in">Sign in</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">Emulator: http://10.0.2.2:8000/  |  Phone: http://YOUR-PC-IP:8000/</string>
+    <string name="logout">Log out</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_products">Products</string>
+    <string name="nav_stock">Stock</string>
+    <string name="nav_customers">Customers</string>
+    <string name="nav_orders">Orders</string>
+    <string name="search_products">Search products</string>
+    <string name="search_stock">Search stock</string>
+    <string name="search_customers">Search customers</string>
+    <string name="search_orders">Search orders</string>
+    <string name="retry">Retry</string>
+    <string name="new_order">New order</string>
+    <string name="place_order">Place order</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+</resources>

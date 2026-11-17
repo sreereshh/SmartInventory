@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1><i class="bi {{ icon|default:'bi-pencil' }} text-primary me-2"></i>{{ title }}</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xl-8 col-lg-10">
+    <div class="card">
+      <div class="card-body p-4">
+        {% if info %}<div class="alert alert-info py-2 small"><i class="bi bi-info-circle me-1"></i>{{ info }}</div>{% endif %}
+        <form method="post" novalidate data-once>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>
+          {% endif %}
+          <div class="row g-3">
+            {% for field in form %}
+              <div class="{% if field.widget_type == 'textarea' %}col-12{% else %}col-md-6{% endif %}">
+                {% if field.widget_type == 'checkbox' %}
+                  <div class="form-check form-switch mt-4">
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  </div>
+                {% else %}
+                  <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>
+                  {{ field }}
+                {% endif %}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check2-circle me-1"></i>{{ submit_label|default:"Save" }}</button>
+            <a href="{% url cancel_url %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

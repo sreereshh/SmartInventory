@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static ui_extras %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="subtitle">Welcome back, {{ user.display_name }}. Here is what is happening in your business.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'orders:create' %}" class="btn btn-primary"><i class="bi bi-cart-plus me-1"></i>New order</a>
+    <a href="{% url 'inventory:stock_in' %}" class="btn btn-outline-primary"><i class="bi bi-box-arrow-in-down me-1"></i>Stock in</a>
+  </div>
+</div>
+
+{% if d.low_stock_count %}
+<div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
+  <div><i class="bi bi-exclamation-triangle-fill me-2"></i><strong>{{ d.low_stock_count }}</strong> product{{ d.low_stock_count|pluralize }} at or below the minimum stock level
+    {% if d.out_of_stock_count %}({{ d.out_of_stock_count }} out of stock){% endif %}.</div>
+  <a href="{% url 'reports:low_stock' %}" class="btn btn-sm btn-warning">View low stock report</a>
+</div>
+{% endif %}
+
+<!-- KPI cards -->
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-indigo"><i class="bi bi-box-seam"></i></div>
+    <div><div class="stat-label">Total products</div><div class="stat-value">{{ d.total_products }}</div></div></div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-cyan"><i class="bi bi-people"></i></div>
+    <div><div class="stat-label">Total customers</div><div class="stat-value">{{ d.total_customers }}</div></div></div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-violet"><i class="bi bi-receipt"></i></div>
+    <div><div class="stat-label">Total orders</div><div class="stat-value">{{ d.total_orders }}</div></div></div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-green"><i class="bi bi-currency-rupee"></i></div>
+    <div><div class="stat-label">Total sales</div><div class="stat-value">{{ CURRENCY }}{{ d.total_sales|floatformat:"2g" }}</div></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-xl-3"><a href="{% url 'reports:low_stock' %}" class="text-decoration-none"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-amber"><i class="bi bi-exclamation-triangle"></i></div>
+    <div><div class="stat-label">Low stock products</div><div class="stat-value text-body">{{ d.low_stock_count }}</div></div></div></div></a></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-green"><i class="bi bi-calendar-day"></i></div>
+    <div><div class="stat-label">Sales today</div><div class="stat-value">{{ CURRENCY }}{{ d.sales.today|floatformat:"2g" }}</div>
+      <div class="small text-muted">{{ d.sales.today_orders }} order{{ d.sales.today_orders|pluralize }}</div></div></div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-indigo"><i class="bi bi-calendar-month"></i></div>
+    <div><div class="stat-label">Sales this month</div><div class="stat-value">{{ CURRENCY }}{{ d.sales.this_month|floatformat:"2g" }}</div>
+      <div class="small text-muted">{{ d.sales.this_month_orders }} order{{ d.sales.this_month_orders|pluralize }}</div></div></div></div></div>
+  <div class="col-sm-6 col-xl-3"><div class="card stat-card h-100"><div class="card-body d-flex align-items-center gap-3">
+    <div class="stat-icon icon-cyan"><i class="bi bi-graph-up"></i></div>
+    <div><div class="stat-label">Gross profit</div><div class="stat-value">{{ CURRENCY }}{{ d.sales.gross_profit|floatformat:"2g" }}</div>
+      <div class="small text-muted">Avg. order {{ CURRENCY }}{{ d.sales.average_order_value|floatformat:"2g" }}</div></div></div></div></div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-3">
+  <div class="col-lg-8"><div class="card h-100">
+    <div class="card-header">Sales – last 7 days</div>
+    <div class="card-body"><div style="height:280px"><canvas id="salesChart"></canvas></div></div></div></div>
+  <div class="col-lg-4"><div class="card h-100">
+    <div class="card-header">Orders by status</div>
+    <div class="card-body"><div style="height:280px"><canvas id="statusChart"></canvas></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6"><div class="card h-100">
+    <div class="card-header d-flex justify-content-between"><span>Inventory statistics</span>
+      <span class="text-muted small fw-normal">{{ d.inventory.total_units }} units in stock</span></div>
+    <div class="card-body">
+      <div class="row text-center mb-3">
+        <div class="col-6"><div class="stat-label">Stock value (cost)</div><div class="fs-5 fw-bold">{{ CURRENCY }}{{ d.inventory.cost_value|floatformat:"2g" }}</div></div>
+        <div class="col-6"><div class="stat-label">Stock value (retail)</div><div class="fs-5 fw-bold">{{ CURRENCY }}{{ d.inventory.retail_value|floatformat:"2g" }}</div></div>
+      </div>
+      <div style="height:220px"><canvas id="categoryChart"></canvas></div>
+    </div></div></div>
+  <div class="col-lg-6"><div class="card h-100">
+    <div class="card-header">Top selling products</div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead><tr><th>Product</th><th class="text-end">Units</th><th class="text-end">Revenue</th></tr></thead>
+        <tbody>
+        {% for p in d.sales.top_products %}
+          <tr><td><a href="{% url 'products:detail' p.product_id %}" class="text-decoration-none fw-semibold">{{ p.name }}</a><div class="small text-muted">{{ p.code }}</div></td>
+            <td class="text-end">{{ p.units }}</td><td class="text-end">{{ CURRENCY }}{{ p.revenue|floatformat:"2g" }}</td></tr>
+        {% empty %}
+          <tr><td colspan="3"><div class="empty-state py-4">No sales yet.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7"><div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center"><span>Recent orders</span>
+      <a href="{% url 'orders:list' %}" class="btn btn-sm btn-outline-primary">View all</a></div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th class="text-end">Total</th></tr></thead>
+        <tbody>
+        {% for o in d.recent_orders %}
+          <tr>
+            <td><a href="{% url 'orders:detail' o.id %}" class="fw-semibold text-decoration-none">{{ o.order_number }}</a><div class="small text-muted">{{ o.created_at|date:"d M, H:i" }}</div></td>
+            <td>{{ o.customer }}</td>
+            <td><span class="badge badge-soft bg-{{ o.status|order_badge }}">{{ o.status_display }}</span></td>
+            <td class="text-end">{{ CURRENCY }}{{ o.total_amount|floatformat:"2g" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-receipt"></i>No orders yet. <a href="{% url 'orders:create' %}">Create the first one</a>.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div></div></div>
+  <div class="col-lg-5"><div class="card h-100">
+    <div class="card-header d-flex justify-content-between align-items-center"><span>Low stock products</span>
+      <a href="{% url 'inventory:stock_list' %}?status=low" class="btn btn-sm btn-outline-warning">View all</a></div>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Min</th><th></th></tr></thead>
+        <tbody>
+        {% for p in d.low_stock_products %}
+          <tr>
+            <td><a href="{% url 'products:detail' p.id %}" class="text-decoration-none fw-semibold">{{ p.name }}</a><div class="small text-muted">{{ p.code }}</div></td>
+            <td class="text-end"><span class="badge badge-soft bg-{{ p.stock_status|stock_badge }}">{{ p.quantity }}</span></td>
+            <td class="text-end">{{ p.min_stock_level }}</td>
+            <td class="actions"><a class="btn btn-sm btn-outline-primary" href="{% url 'inventory:stock_in' %}?product={{ p.id }}">Restock</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-check-circle"></i>All products are well stocked.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div></div></div>
+</div>
+
+{{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

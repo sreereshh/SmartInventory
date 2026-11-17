@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}Orders{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Orders</h1><p class="subtitle">Order history and status.</p></div>
+  <a href="{% url 'orders:create' %}" class="btn btn-primary"><i class="bi bi-cart-plus me-1"></i>New order</a>
+</div>
+<div class="card">
+  <div class="card-body border-bottom">
+    <form method="get" class="row g-2 filter-bar">
+      <div class="col-lg-3"><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Order no., customer or phone"></div>
+      <div class="col-lg-2 col-6">
+        <select name="status" class="form-select" data-autosubmit>
+          <option value="">All statuses</option>
+          {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div class="col-lg-2 col-6"><input type="date" name="date_from" value="{{ date_from }}" class="form-control" title="From date"></div>
+      <div class="col-lg-2 col-6"><input type="date" name="date_to" value="{{ date_to }}" class="form-control" title="To date"></div>
+      <div class="col-lg-3 d-flex gap-2"><button class="btn btn-primary flex-fill">Filter</button>
+        {% if q or status or date_from or date_to %}<a href="{% url 'orders:list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}</div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th class="text-end">Items</th><th class="text-end">Total</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for o in page %}
+        <tr>
+          <td><a href="{% url 'orders:detail' o.pk %}" class="fw-semibold text-decoration-none">{{ o.order_number }}</a></td>
+          <td>{{ o.customer.name }}</td>
+          <td>{{ o.created_at|date:"d M Y, H:i" }}</td>
+          <td class="text-end">{{ o.units|default:0 }}</td>
+          <td class="text-end fw-semibold">{{ CURRENCY }}{{ o.total_amount|floatformat:"2g" }}</td>
+          <td><span class="badge badge-soft bg-{{ o.status|order_badge }}">{{ o.get_status_display }}</span></td>
+          <td class="actions"><a href="{% url 'orders:detail' o.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i>View</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><i class="bi bi-receipt"></i>No orders found.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

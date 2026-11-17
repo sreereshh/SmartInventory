@@ -1,0 +1,21 @@
+# Render.com blueprint (https://render.com/docs/blueprint-spec)
+# NOTE: SQLite on a free instance is wiped on every deploy. Attach a persistent disk
+# (paid) and set DJANGO_DB_PATH, or switch DATABASES to PostgreSQL for real production use.
+services:
+  - type: web
+    name: smart-inventory
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements-prod.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate --noinput && gunicorn config.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://*.onrender.com

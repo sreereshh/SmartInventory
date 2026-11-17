@@ -1,0 +1,82 @@
+erDiagram
+    USER ||--o{ ORDER : "creates (created_by)"
+    USER ||--o{ STOCK_TRANSACTION : "records (created_by)"
+    CATEGORY ||--o{ PRODUCT : "groups"
+    CUSTOMER ||--o{ ORDER : "places"
+    ORDER ||--|{ ORDER_ITEM : "contains"
+    PRODUCT ||--o{ ORDER_ITEM : "is sold as"
+    PRODUCT ||--o{ STOCK_TRANSACTION : "has history"
+    ORDER |o--o{ STOCK_TRANSACTION : "causes (sale / cancel)"
+
+    USER {
+        int id PK
+        string username UK
+        string password "PBKDF2-SHA256 hash"
+        string email
+        string first_name
+        string last_name
+        string phone
+        string role "admin | staff"
+        bool is_active
+        bool is_superuser
+    }
+    CATEGORY {
+        int id PK
+        string name UK
+        text description
+        datetime created_at
+    }
+    PRODUCT {
+        int id PK
+        string name
+        string code UK
+        int category_id FK "PROTECT"
+        text description
+        decimal purchase_price "CHECK >= 0"
+        decimal selling_price "CHECK >= 0"
+        uint quantity "never below 0"
+        uint min_stock_level
+        datetime created_at
+        datetime updated_at
+    }
+    CUSTOMER {
+        int id PK
+        string name
+        string phone
+        string email
+        text address
+        datetime created_at
+    }
+    ORDER {
+        int id PK
+        string order_number UK "ORD-00001"
+        int customer_id FK "PROTECT"
+        int created_by_id FK "SET NULL"
+        string status "pending|confirmed|completed|cancelled"
+        decimal total_amount "CHECK >= 0"
+        text notes
+        datetime created_at
+        datetime updated_at
+    }
+    ORDER_ITEM {
+        int id PK
+        int order_id FK "CASCADE"
+        int product_id FK "PROTECT"
+        uint quantity "CHECK >= 1"
+        decimal unit_price "price snapshot"
+        decimal unit_cost "cost snapshot"
+        decimal subtotal
+    }
+    STOCK_TRANSACTION {
+        int id PK
+        int product_id FK "CASCADE"
+        int order_id FK "SET NULL, optional"
+        int created_by_id FK "SET NULL"
+        string transaction_type "IN | OUT"
+        string reason "opening|purchase|return|sale|order_cancel|damage|adjustment|other"
+        uint quantity "CHECK > 0"
+        uint quantity_before
+        uint quantity_after
+        string note
+        datetime created_at
+    }

@@ -1,0 +1,4 @@
+# Production server dependencies (Linux hosting such as Render / Railway / a VPS).
+# gunicorn does NOT run on Windows - use `python manage.py runserver` locally.
+-r requirements.txt
+gunicorn>=22.0

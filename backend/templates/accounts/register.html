@@ -1,0 +1,45 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account · {{ APP_NAME }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+<div class="auth-wrap">
+  <section class="auth-hero">
+    <h1>Join your team on<br>SmartInventory.</h1>
+    <p class="lead">New accounts are created with the <strong>Staff</strong> role. An administrator can promote you later.</p>
+    <ul class="list-unstyled">
+      <li><i class="bi bi-person-check-fill me-2 text-info"></i>Staff: manage products, customers, stock and orders</li>
+      <li><i class="bi bi-shield-check me-2 text-info"></i>Admin: also delete records and manage users</li>
+    </ul>
+  </section>
+  <section class="auth-panel">
+    <div class="auth-card" style="max-width:460px">
+      <h2 class="fw-bold mb-1">Create your account</h2>
+      <p class="text-muted mb-4">It only takes a minute</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+          {% for field in form %}
+            <div class="{% if field.name == 'first_name' or field.name == 'last_name' %}col-md-6{% else %}col-12{% endif %}">
+              <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text and field.name != 'username' %}<div class="form-text small">{{ field.help_text|safe }}</div>{% endif %}
+              {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2 mt-4"><i class="bi bi-person-plus me-1"></i>Create account</button>
+      </form>
+      <p class="text-center text-muted mt-4 mb-0">Already registered? <a href="{% url 'accounts:login' %}">Sign in</a></p>
+    </div>
+  </section>
+</div>
+</body>
+</html>

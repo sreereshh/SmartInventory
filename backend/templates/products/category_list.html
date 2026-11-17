@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Categories</h1><p class="subtitle">Group your products.</p></div>
+  <a href="{% url 'products:category_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add category</a>
+</div>
+<div class="card">
+  <div class="card-body border-bottom">
+    <form method="get" class="row g-2 filter-bar">
+      <div class="col-md-5"><input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Search categories"></div>
+      <div class="col-auto"><button class="btn btn-primary">Search</button>
+        {% if q %}<a href="{% url 'products:category_list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}</div>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Name</th><th>Description</th><th class="text-end">Products</th><th></th></tr></thead>
+      <tbody>
+      {% for c in page %}
+        <tr>
+          <td class="fw-semibold">{{ c.name }}</td>
+          <td class="text-muted">{{ c.description|default:"—"|truncatechars:80 }}</td>
+          <td class="text-end"><a href="{% url 'products:list' %}?category={{ c.pk }}" class="text-decoration-none">{{ c.product_count }}</a></td>
+          <td class="actions">
+            <a href="{% url 'products:category_update' c.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            {% if user.is_admin_role %}<a href="{% url 'products:category_delete' c.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4"><div class="empty-state"><i class="bi bi-tags"></i>No categories yet.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

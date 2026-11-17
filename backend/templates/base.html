@@ -1,0 +1,118 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Dashboard{% endblock %} · {{ APP_NAME }}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar no-print" id="sidebar">
+    <a class="brand" href="{% url 'dashboard' %}">
+      <span class="logo"><i class="bi bi-box-seam-fill"></i></span> SmartInventory
+    </a>
+    <nav class="nav flex-column pb-3">
+      <div class="nav-section">Overview</div>
+      <a class="nav-link {% if nav_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+
+      <div class="nav-section">Catalogue</div>
+      <a class="nav-link {% if nav == 'products' and 'category' not in nav_name %}active{% endif %}" href="{% url 'products:list' %}"><i class="bi bi-box-seam"></i> Products</a>
+      <a class="nav-link {% if 'category' in nav_name %}active{% endif %}" href="{% url 'products:category_list' %}"><i class="bi bi-tags"></i> Categories</a>
+
+      <div class="nav-section">Inventory</div>
+      <a class="nav-link {% if nav_name == 'stock_list' %}active{% endif %}" href="{% url 'inventory:stock_list' %}"><i class="bi bi-boxes"></i> Current stock
+        {% if low_stock_count %}<span class="badge bg-warning text-dark">{{ low_stock_count }}</span>{% endif %}</a>
+      <a class="nav-link {% if nav_name == 'stock_in' %}active{% endif %}" href="{% url 'inventory:stock_in' %}"><i class="bi bi-box-arrow-in-down"></i> Stock in</a>
+      <a class="nav-link {% if nav_name == 'stock_out' %}active{% endif %}" href="{% url 'inventory:stock_out' %}"><i class="bi bi-box-arrow-up"></i> Stock out</a>
+      <a class="nav-link {% if nav_name == 'stock_history' %}active{% endif %}" href="{% url 'inventory:stock_history' %}"><i class="bi bi-clock-history"></i> Stock history</a>
+
+      <div class="nav-section">Sales</div>
+      <a class="nav-link {% if nav == 'orders' and nav_name != 'create' %}active{% endif %}" href="{% url 'orders:list' %}"><i class="bi bi-receipt"></i> Orders</a>
+      <a class="nav-link {% if nav == 'orders' and nav_name == 'create' %}active{% endif %}" href="{% url 'orders:create' %}"><i class="bi bi-cart-plus"></i> New order</a>
+      <a class="nav-link {% if nav == 'customers' %}active{% endif %}" href="{% url 'customers:list' %}"><i class="bi bi-people"></i> Customers</a>
+
+      <div class="nav-section">Insights</div>
+      <a class="nav-link {% if nav == 'reports' %}active{% endif %}" href="{% url 'reports:index' %}"><i class="bi bi-graph-up-arrow"></i> Reports</a>
+
+      {% if user.is_admin_role %}
+      <div class="nav-section">Administration</div>
+      <a class="nav-link {% if nav_name == 'user_list' or nav_name == 'user_update' %}active{% endif %}" href="{% url 'accounts:user_list' %}"><i class="bi bi-person-gear"></i> Users &amp; roles</a>
+      {% if user.is_superuser %}<a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-shield-lock"></i> Django admin</a>{% endif %}
+      <a class="nav-link" href="{% url 'swagger-ui' %}" target="_blank" rel="noopener"><i class="bi bi-braces"></i> API docs (Swagger)</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">Smart Inventory &amp; Order Management</div>
+  </aside>
+  <div class="sidebar-backdrop no-print" id="sidebarBackdrop"></div>
+
+  <!-- ===== Main ===== -->
+  <div class="main">
+    <header class="topbar no-print">
+      <button class="btn btn-light d-lg-none" id="sidebarToggle" type="button" aria-label="Toggle navigation"><i class="bi bi-list fs-5"></i></button>
+      <form class="search" action="{% url 'products:list' %}" method="get" role="search">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="search" name="q" class="form-control border-start-0" placeholder="Search products by name or code…" aria-label="Search products">
+        </div>
+      </form>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <a class="btn btn-primary btn-sm d-none d-md-inline-flex align-items-center gap-1" href="{% url 'orders:create' %}"><i class="bi bi-plus-lg"></i> New order</a>
+
+        <div class="dropdown">
+          <button class="btn btn-light position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Low stock notifications">
+            <i class="bi bi-bell"></i>
+            {% if low_stock_count %}<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ low_stock_count }}</span>{% endif %}
+          </button>
+          <div class="dropdown-menu dropdown-menu-end p-0" style="min-width: 300px;">
+            <div class="px-3 py-2 border-bottom fw-semibold">Low stock alerts</div>
+            {% for p in low_stock_preview %}
+              <a class="dropdown-item d-flex justify-content-between align-items-center py-2" href="{% url 'products:detail' p.pk %}">
+                <span class="text-truncate me-2">{{ p.name }}</span>
+                <span class="badge bg-{% if p.quantity == 0 %}danger{% else %}warning text-dark{% endif %}">{{ p.quantity }} left</span>
+              </a>
+            {% empty %}
+              <div class="px-3 py-3 text-muted small">All products are sufficiently stocked.</div>
+            {% endfor %}
+            {% if low_stock_count %}<a class="dropdown-item text-center small py-2 border-top" href="{% url 'reports:low_stock' %}">View low stock report</a>{% endif %}
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-light d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar">{{ user.username|slice:":1"|upper }}</span>
+            <span class="d-none d-md-block text-start lh-sm">
+              <span class="d-block fw-semibold">{{ user.display_name }}</span>
+              <span class="d-block small text-muted">{{ user.get_role_display }}</span>
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>My profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Log out</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

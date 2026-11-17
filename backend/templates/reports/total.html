@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Total sales report{% endblock %}
+{% block content %}
+{% with report_title="Total Sales Report" report_subtitle="All time" %}{% include "reports/_report_head.html" %}{% endwith %}
+<div class="page-header">
+  <div><h1>Total sales report</h1><p class="subtitle">All-time figures · {{ report.cancelled_orders }} cancelled order{{ report.cancelled_orders|pluralize }} excluded</p></div>
+  <div class="page-actions"><button class="btn btn-outline-secondary" data-print><i class="bi bi-printer me-1"></i>Print</button></div>
+</div>
+{% with s=report.summary %}{% include "reports/_summary_cards.html" %}{% endwith %}
+<div class="row g-3">
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Sales by month</div>
+    <div class="table-responsive"><table class="table">
+      <thead><tr><th>Month</th><th class="text-end">Orders</th><th class="text-end">Sales</th></tr></thead>
+      <tbody>
+      {% for m in report.monthly %}<tr><td><a href="{% url 'reports:monthly' %}?month={{ m.month|date:'Y-m' }}">{{ m.month|date:"M Y" }}</a></td><td class="text-end">{{ m.orders }}</td><td class="text-end">{{ CURRENCY }}{{ m.total|floatformat:"2g" }}</td></tr>
+      {% empty %}<tr><td colspan="3"><div class="empty-state py-4">No sales yet.</div></td></tr>{% endfor %}
+      </tbody></table></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Best-selling products</div>
+    <div class="table-responsive"><table class="table">
+      <thead><tr><th>Product</th><th class="text-end">Units</th><th class="text-end">Revenue</th></tr></thead>
+      <tbody>
+      {% for p in report.products %}<tr><td>{{ p.name }}</td><td class="text-end">{{ p.units }}</td><td class="text-end">{{ CURRENCY }}{{ p.revenue|floatformat:"2g" }}</td></tr>
+      {% empty %}<tr><td colspan="3"><div class="empty-state py-4">No sales yet.</div></td></tr>{% endfor %}
+      </tbody></table></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">Top customers</div>
+    <div class="table-responsive"><table class="table">
+      <thead><tr><th>Customer</th><th class="text-end">Orders</th><th class="text-end">Spent</th></tr></thead>
+      <tbody>
+      {% for c in report.customers %}<tr><td>{{ c.name }}</td><td class="text-end">{{ c.orders }}</td><td class="text-end">{{ CURRENCY }}{{ c.total|floatformat:"2g" }}</td></tr>
+      {% empty %}<tr><td colspan="3"><div class="empty-state py-4">No sales yet.</div></td></tr>{% endfor %}
+      </tbody></table></div></div></div>
+</div>
+{% endblock %}

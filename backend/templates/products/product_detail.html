@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load ui_extras %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>{{ product.name }}</h1><p class="subtitle">{{ product.code }} · {{ product.category.name }}</p></div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'inventory:stock_in' %}?product={{ product.pk }}" class="btn btn-success"><i class="bi bi-box-arrow-in-down me-1"></i>Stock in</a>
+    <a href="{% url 'inventory:stock_out' %}?product={{ product.pk }}" class="btn btn-warning"><i class="bi bi-box-arrow-up me-1"></i>Stock out</a>
+    <a href="{% url 'products:update' product.pk %}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Edit</a>
+    {% if user.is_admin_role %}<a href="{% url 'products:delete' product.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Delete</a>{% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100"><div class="card-header">Details</div><div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-5">Purchase price</dt><dd class="col-sm-7">{{ CURRENCY }}{{ product.purchase_price|floatformat:"2g" }}</dd>
+        <dt class="col-sm-5">Selling price</dt><dd class="col-sm-7">{{ CURRENCY }}{{ product.selling_price|floatformat:"2g" }}</dd>
+        <dt class="col-sm-5">Available quantity</dt><dd class="col-sm-7 fw-bold">{{ product.quantity }}
+          <span class="badge badge-soft bg-{{ product.stock_status|stock_badge }} ms-1">{{ product.stock_status|stock_label }}</span></dd>
+        <dt class="col-sm-5">Minimum stock level</dt><dd class="col-sm-7">{{ product.min_stock_level }}</dd>
+        <dt class="col-sm-5">Stock value (cost)</dt><dd class="col-sm-7">{{ CURRENCY }}{{ product.stock_value|floatformat:"2g" }}</dd>
+        <dt class="col-sm-5">Description</dt><dd class="col-sm-7">{{ product.description|default:"—"|linebreaksbr }}</dd>
+        <dt class="col-sm-5">Added</dt><dd class="col-sm-7">{{ product.created_at|date:"d M Y" }}</dd>
+        <dt class="col-sm-5">Last updated</dt><dd class="col-sm-7 mb-0">{{ product.updated_at|date:"d M Y, H:i" }}</dd>
+      </dl>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100"><div class="card-header d-flex justify-content-between align-items-center">Recent stock movements
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'inventory:stock_history' %}?q={{ product.code }}">Full history</a></div>
+      <div class="table-responsive"><table class="table">
+        <thead><tr><th>Date</th><th>Type</th><th>Reason</th><th class="text-end">Qty</th><th class="text-end">After</th></tr></thead>
+        <tbody>
+        {% for t in history %}
+          <tr><td>{{ t.created_at|date:"d M Y, H:i" }}</td>
+            <td><span class="badge badge-soft bg-{% if t.transaction_type == 'IN' %}success{% else %}warning{% endif %}">{{ t.get_transaction_type_display }}</span></td>
+            <td>{{ t.get_reason_display }}</td>
+            <td class="text-end">{% if t.transaction_type == 'IN' %}+{% else %}−{% endif %}{{ t.quantity }}</td>
+            <td class="text-end">{{ t.quantity_after }}</td></tr>
+        {% empty %}
+          <tr><td colspan="5"><div class="empty-state py-4">No stock movements yet.</div></td></tr>
+        {% endfor %}
+        </tbody></table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
