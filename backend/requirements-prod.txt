@@ -2,3 +2,5 @@
 # gunicorn does NOT run on Windows - use `python manage.py runserver` locally.
 -r requirements.txt
 gunicorn>=22.0
+dj-database-url>=2.2
+psycopg[binary]>=3.2

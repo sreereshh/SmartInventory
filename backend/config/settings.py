@@ -105,14 +105,25 @@ TEMPLATES = [
 # --------------------------------------------------------------------------
 # Database (SQLite)
 # --------------------------------------------------------------------------
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.getenv("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3")),
-    }
-}
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# --------------------------------------------------------------------------
+# Database (SQLite locally / PostgreSQL on Render)
+# --------------------------------------------------------------------------
+if os.getenv("DATABASE_URL"):
+    import dj_database_url
 
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.getenv("DJANGO_DB_PATH", str(BASE_DIR / "db.sqlite3")),
+        }
+    }
 # --------------------------------------------------------------------------
 # Authentication
 # --------------------------------------------------------------------------
